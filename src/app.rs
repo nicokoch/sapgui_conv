@@ -39,7 +39,7 @@ impl TemplateApp {
         ui.add_space(12.0);
         ui.horizontal(|ui| {
             let conn_string = match self.conn.as_connection_string() {
-                s if s.is_empty() => "/H/".to_string(),
+                s if s.is_empty() => "/H/".to_owned(),
                 s => s,
             };
 
