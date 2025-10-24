@@ -20,7 +20,7 @@ fn main() -> eframe::Result {
     eframe::run_native(
         "sapgui_conv",
         native_options,
-        Box::new(|cc| Ok(Box::new(sapgui_conv::TemplateApp::new(cc)))),
+        Box::new(|_cc| Ok(Box::new(sapgui_conv::TemplateApp::default()))),
     )
 }
 
@@ -50,7 +50,7 @@ fn main() {
             .start(
                 canvas,
                 web_options,
-                Box::new(|cc| Ok(Box::new(eframe_template::TemplateApp::new(cc)))),
+                Box::new(|_cc| Ok(Box::new(sapgui_conv::TemplateApp::default()))),
             )
             .await;
 
