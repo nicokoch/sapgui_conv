@@ -38,12 +38,17 @@ impl TemplateApp {
         });
         ui.add_space(12.0);
         ui.horizontal(|ui| {
-            let conn_string = self.conn.as_connection_string();
+            let conn_string = match self.conn.as_connection_string() {
+                s if s.is_empty() => "/H/".to_string(),
+                s => s,
+            };
+
             ui.label(WidgetText::Text(conn_string.clone()).strong().monospace());
             if ui.button("📋 copy").clicked() {
                 ui.ctx().copy_text(conn_string);
             }
         });
+        ui.end_row();
     }
 }
 
@@ -74,6 +79,14 @@ impl eframe::App for TemplateApp {
 
         egui::CentralPanel::default().show(ctx, |ui| {
             self.render_ui(ui);
+            ui.separator();
+            ui.add(egui::github_link_file!(
+                "https://github.com/nicokoch/sapgui_conv/blob/main/",
+                "Source code."
+            ));
+            ui.with_layout(egui::Layout::bottom_up(egui::Align::LEFT), |ui| {
+                egui::warn_if_debug_build(ui);
+            });
         });
     }
 }
