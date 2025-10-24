@@ -1,10 +1,18 @@
-use egui::{Ui, WidgetText};
+use egui::{Response, TextBuffer, Ui, WidgetText};
 
 use crate::conv::SapGuiConnection;
 
-#[derive(Default)]
 pub struct TemplateApp {
     conn: SapGuiConnection,
+    conn_string: String,
+}
+
+impl Default for TemplateApp {
+    fn default() -> Self {
+        let conn = SapGuiConnection::default();
+        let conn_string = conn.as_connection_string();
+        Self { conn, conn_string }
+    }
 }
 
 impl TemplateApp {
@@ -16,36 +24,43 @@ impl TemplateApp {
     }
 
     fn render_win_to_java(&mut self, ui: &mut Ui) {
+        let mut changed = false;
         egui::Grid::new("grid").num_columns(2).show(ui, |ui| {
-            ui.label("System ID");
-            ui.text_edit_singleline(&mut self.conn.system_id);
-            ui.end_row();
-            ui.label("Application server");
-            ui.text_edit_singleline(&mut self.conn.appl_server);
-            ui.end_row();
-            ui.label("Instance id");
-            ui.text_edit_singleline(&mut self.conn.instance_id);
-            ui.end_row();
-            ui.label("Router string");
-            ui.text_edit_singleline(&mut self.conn.router);
-            ui.end_row();
-            ui.label("Client");
-            ui.text_edit_singleline(&mut self.conn.client);
-            ui.end_row();
-            ui.label("Username");
-            ui.text_edit_singleline(&mut self.conn.user);
-            ui.end_row();
+            changed |= Self::add_text_input(ui, "System ID", &mut self.conn.system_id).changed();
+            changed |= Self::add_text_input(ui, "Application Server", &mut self.conn.appl_server)
+                .changed();
+            changed |=
+                Self::add_text_input(ui, "Instance ID", &mut self.conn.instance_id).changed();
+            changed |= Self::add_text_input(ui, "Router string", &mut self.conn.router).changed();
+            changed |= Self::add_text_input(ui, "Client", &mut self.conn.client).changed();
+            changed |= Self::add_text_input(ui, "Username", &mut self.conn.user).changed();
         });
         ui.add_space(12.0);
         ui.horizontal(|ui| {
-            let conn_string = self.conn.as_connection_string();
-
-            ui.label(WidgetText::Text(conn_string.clone()).strong().monospace());
+            if changed {
+                self.conn_string = self.conn.as_connection_string();
+            }
+            ui.label(
+                WidgetText::Text(self.conn_string.clone())
+                    .strong()
+                    .monospace(),
+            );
             if ui.button("📋 copy").clicked() {
-                ui.ctx().copy_text(conn_string);
+                ui.ctx().copy_text(self.conn_string.clone());
             }
         });
         ui.end_row();
+    }
+
+    fn add_text_input<L: Into<WidgetText>, S: TextBuffer>(
+        ui: &mut Ui,
+        label: L,
+        text: &mut S,
+    ) -> Response {
+        ui.label(label);
+        let res = ui.text_edit_singleline(text);
+        ui.end_row();
+        res
     }
 }
 
