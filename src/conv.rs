@@ -11,6 +11,9 @@ pub struct SapGuiConnection {
     pub client: String,
     pub user: String,
     pub lang: String,
+    pub activate_snc: bool,
+    pub snc_name: String,
+    pub disable_sso: bool,
 }
 
 impl SapGuiConnection {
@@ -50,12 +53,27 @@ impl SapGuiConnection {
         let user = &self.user;
         let lang = &self.lang;
 
+        let (sncqop, sncname, manual_login) = {
+            if self.activate_snc {
+                (
+                    "9",
+                    self.snc_name.as_str(),
+                    if self.disable_sso { "true" } else { "false" },
+                )
+            } else {
+                Default::default()
+            }
+        };
+
         let mut res = String::new();
         Self::append_key(&mut res, "conn", &conn);
         Self::append_key(&mut res, "systemName", system_id);
         Self::append_key(&mut res, "clnt", client);
         Self::append_key(&mut res, "user", user);
         Self::append_key(&mut res, "lang", lang);
+        Self::append_key(&mut res, "sncqop", sncqop);
+        Self::append_key(&mut res, "sncname", sncname);
+        Self::append_key(&mut res, "manualLogin", manual_login);
         if res.is_empty() {
             String::from("conn=")
         } else {
@@ -68,6 +86,7 @@ impl SapGuiConnection {
             if !res.is_empty() {
                 res.push('&');
             }
+            let val = val.trim();
             res.push_str(&format!("{key}={val}"));
         }
     }

@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use egui::{Response, TextBuffer, Ui, WidgetText};
 
 use crate::conv::{ParseError, Parser, SapGuiConnection};
@@ -11,10 +12,7 @@ impl Default for ConnAndString {
     fn default() -> Self {
         let conn = SapGuiConnection::default();
         let conn_string = conn.to_connection_string();
-        Self {
-            conn,
-            conn_string,
-        }
+        Self { conn, conn_string }
     }
 }
 
@@ -36,28 +34,40 @@ impl TemplateApp {
         ui.heading("Windows to Java");
         ui.add_space(12.0);
         self.render_win_to_java(ui);
-        ui.add_space(12.0);
-        ui.heading("Java to Windows");
-        ui.add_space(12.0);
-        self.render_java_to_windows(ui);
+        // ui.add_space(12.0);
+        // ui.heading("Java to Windows");
+        // ui.add_space(12.0);
+        // self.render_java_to_windows(ui);
     }
 
     fn render_win_to_java(&mut self, ui: &mut Ui) {
         let mut changed = false;
-        egui::Grid::new("grid_1").num_columns(2).show(ui, |ui| {
-            changed |=
-                Self::add_text_input(ui, "System ID", &mut self.wtj.conn.system_id).changed();
-            changed |=
-                Self::add_text_input(ui, "Application Server", &mut self.wtj.conn.appl_server)
+        ui.horizontal_top(|ui| {
+            egui::Grid::new("grid_1").num_columns(2).show(ui, |ui| {
+                changed |=
+                    Self::add_text_input(ui, "System ID", &mut self.wtj.conn.system_id).changed();
+                changed |=
+                    Self::add_text_input(ui, "Application Server", &mut self.wtj.conn.appl_server)
+                        .changed();
+                changed |= Self::add_text_input(ui, "Instance ID", &mut self.wtj.conn.instance_id)
                     .changed();
-            changed |=
-                Self::add_text_input(ui, "Instance ID", &mut self.wtj.conn.instance_id).changed();
-            changed |=
-                Self::add_text_input(ui, "Router string", &mut self.wtj.conn.router).changed();
-            changed |= Self::add_text_input(ui, "Client", &mut self.wtj.conn.client).changed();
-            changed |= Self::add_text_input(ui, "Username", &mut self.wtj.conn.user).changed();
-            changed |= Self::add_text_input(ui, "Language", &mut self.wtj.conn.lang).changed();
+                changed |=
+                    Self::add_text_input(ui, "Router string", &mut self.wtj.conn.router).changed();
+                changed |= Self::add_text_input(ui, "Client", &mut self.wtj.conn.client).changed();
+                changed |= Self::add_text_input(ui, "Username", &mut self.wtj.conn.user).changed();
+                changed |= Self::add_text_input(ui, "Language", &mut self.wtj.conn.lang).changed();
+            });
+
+            egui::Grid::new("grid_2").num_columns(2).show(ui, |ui| {
+                changed |= Self::add_checkbox(ui, "Activate SNC", &mut self.wtj.conn.activate_snc)
+                    .changed();
+                changed |=
+                    Self::add_text_input(ui, "SNC Name", &mut self.wtj.conn.snc_name).changed();
+                changed |=
+                    Self::add_checkbox(ui, "Disable SSO", &mut self.wtj.conn.disable_sso).changed();
+            });
         });
+
         ui.add_space(12.0);
         ui.horizontal(|ui| {
             if changed {
@@ -143,6 +153,13 @@ impl TemplateApp {
     ) -> Response {
         ui.label(label);
         let res = ui.text_edit_singleline(text);
+        ui.end_row();
+        res
+    }
+
+    fn add_checkbox<L: Into<WidgetText>>(ui: &mut Ui, label: L, flag: &mut bool) -> Response {
+        ui.label(label);
+        let res = ui.checkbox(flag, "");
         ui.end_row();
         res
     }
