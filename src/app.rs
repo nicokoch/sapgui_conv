@@ -73,10 +73,13 @@ impl TemplateApp {
             if changed {
                 self.wtj.conn_string = self.wtj.conn.to_connection_string();
             }
-            ui.label(
-                WidgetText::Text(self.wtj.conn_string.clone())
-                    .strong()
-                    .monospace(),
+            ui.add(
+                egui::Label::new(
+                    WidgetText::Text(self.wtj.conn_string.clone())
+                        .strong()
+                        .monospace(),
+                )
+                .wrap(),
             );
             if ui.button("📋 copy").clicked() {
                 ui.ctx().copy_text(self.wtj.conn_string.clone());
